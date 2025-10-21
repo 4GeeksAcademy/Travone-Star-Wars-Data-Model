@@ -5,14 +5,18 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+
 class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(
+        String(), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(100), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(), default=datetime.utcnow)
-    
-    favorites: Mapped[list["Favorite"]] = relationship("Favorite", back_populates="user")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(), default=datetime.utcnow)
+
+    favorites: Mapped[list["Favorite"]] = relationship(
+        "Favorite", back_populates="user")
 
     def serialize(self):
         return {
@@ -20,6 +24,7 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
         }
+
 
 class Planet(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -37,14 +42,16 @@ class Planet(db.Model):
             "population": self.population
         }
 
+
 class Character(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(), nullable=False)
     gender: Mapped[str] = mapped_column(String(), nullable=True)
     birth_year: Mapped[str] = mapped_column(String(), nullable=True)
     species: Mapped[str] = mapped_column(String(), nullable=True)
-    homeworld_id: Mapped[int] = mapped_column(ForeignKey("planet.id"), nullable=True)
-    
+    homeworld_id: Mapped[int] = mapped_column(
+        ForeignKey("planet.id"), nullable=True)
+
     homeworld: Mapped["Planet"] = relationship("Planet")
 
     def serialize(self):
@@ -56,6 +63,7 @@ class Character(db.Model):
             "species": self.species,
             "homeworld_id": self.homeworld_id
         }
+
 
 class Vehicle(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -77,13 +85,17 @@ class Vehicle(db.Model):
             "vehicle_class": self.vehicle_class
         }
 
+
 class Favorite(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=True)
-    character_id: Mapped[int] = mapped_column(ForeignKey("character.id"), nullable=True)
-    planet_id: Mapped[int] = mapped_column(ForeignKey("planet.id"), nullable=True)
-    vehicle_id: Mapped[int] = mapped_column(ForeignKey("vehicle.id"), nullable=True)
-    
+    character_id: Mapped[int] = mapped_column(
+        ForeignKey("character.id"), nullable=True)
+    planet_id: Mapped[int] = mapped_column(
+        ForeignKey("planet.id"), nullable=True)
+    vehicle_id: Mapped[int] = mapped_column(
+        ForeignKey("vehicle.id"), nullable=True)
+
     user: Mapped["User"] = relationship("User", back_populates="favorites")
     character: Mapped["Character"] = relationship("Character")
     planet: Mapped["Planet"] = relationship("Planet")
@@ -98,15 +110,37 @@ class Favorite(db.Model):
             "vehicle_id": self.vehicle_id
         }
 
+
 class VehiclePilot(db.Model):
     __tablename__ = 'vehicle_pilot'
-    vehicle_id: Mapped[int] = mapped_column(ForeignKey("vehicle.id"), primary_key=True)
-    character_id: Mapped[int] = mapped_column(ForeignKey("character.id"), primary_key=True)
+    vehicle_id: Mapped[int] = mapped_column(
+        ForeignKey("vehicle.id"), primary_key=True)
+    character_id: Mapped[int] = mapped_column(
+        ForeignKey("character.id"), primary_key=True)
+
 
 class Comment(db.Model):
+    __tablename__ = 'comment'
     id: Mapped[int] = mapped_column(primary_key=True)
     content: Mapped[str] = mapped_column(String(), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(), default=datetime.utcnow)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=True)
-    character_id: Mapped[int] = mapped_column(ForeignKey("character.id"), nullable=True)
-    planet_id: Mapped[int] = mapped_column(ForeignKey("planet.id"), nullable=True)
+    character_id: Mapped[int] = mapped_column(
+        ForeignKey("character.id"), nullable=True)
+    planet_id: Mapped[int] = mapped_column(
+        ForeignKey("planet.id"), nullable=True)
+
+    user: Mapped["User"] = relationship("User")
+    character: Mapped["Character"] = relationship("Character")
+    planet: Mapped["Planet"] = relationship("Planet")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "user_id": self.user_id,
+            "character_id": self.character_id,
+            "planet_id": self.planet_id,
+        }

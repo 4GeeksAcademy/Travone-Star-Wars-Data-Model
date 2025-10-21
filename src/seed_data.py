@@ -11,7 +11,7 @@ with app.app_context():
     db.session.add_all([tatooine, naboo, korriban, mustafar])
     db.session.commit()
     
-    # Create Darth characters
+    
     darth_vader = Character(
         name="Darth Vader", 
         gender="male", 
