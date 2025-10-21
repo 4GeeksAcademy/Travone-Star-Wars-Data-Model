@@ -71,6 +71,27 @@ def get_all_users():
     return jsonify([user.serialize() for user in users]), 200
 
 
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json() or {}
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'error': 'email and password required'}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        return jsonify({'error': 'invalid credentials'}), 401
+
+    # NOTE: passwords are stored as plaintext in this starter project seed.
+    # In production, passwords must be hashed. This is a simple smoke-test login.
+    if user.password != password:
+        return jsonify({'error': 'invalid credentials'}), 401
+
+    return jsonify({'message': 'login successful', 'user': user.serialize()}), 200
+
+
 @app.route('/users/favorites', methods=['GET'])
 def get_user_favorites():
     user_id = request.args.get('user_id', type=int)
